@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-d700dee9-a838-4b95-a612-ed3b887760c5/styles.css">
+<script src="_ds/nocturne-d700dee9-a838-4b95-a612-ed3b887760c5/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #161826; }
+  input[type="file"] { display: none; }
+  .cv-row:hover { background: #1d1f2e; }
+  a { color: #9184d9; }
+  a:hover { color: #b5abfc; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#161826;color:#e9e9ed;font-family:Inter,system-ui,sans-serif;font-size:15px">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:16.8px;padding:11.2px 22.4px;border-bottom:1px solid rgba(233,233,237,0.16);position:sticky;top:0;background:rgba(22,24,38,0.92);backdrop-filter:blur(8px);z-index:20">
+    <div style="display:flex;align-items:baseline;gap:11.2px">
+      <span style="font-weight:500;letter-spacing:-0.015em">Control de Vacaciones</span>
+      <span style="font-size:12px;color:#9397ab">Región 1 Medicinas</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8.4px">
+      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-family:Inter,sans-serif;font-weight:500;font-size:14px;line-height:1.2;color:#e9e9ed;background:transparent;border:1px solid transparent;padding:5.6px 10px;border-radius:8px" style-hover="background:#232532">
+        Importar CSV
+        <input type="file" accept=".csv,text/csv" onChange="{{ onFile }}">
+      </label>
+      <button onClick="{{ onTemplate }}" style="cursor:pointer;font-family:Inter,sans-serif;font-weight:500;font-size:14px;line-height:1.2;color:#e9e9ed;background:transparent;border:1px solid transparent;padding:5.6px 10px;border-radius:8px" style-hover="background:#232532">Plantilla</button>
+      <button onClick="{{ onExport }}" style="cursor:pointer;font-family:Inter,sans-serif;font-weight:500;font-size:14px;line-height:1.2;color:#e9e9ed;background:transparent;border:1px solid transparent;padding:5.6px 10px;border-radius:8px" style-hover="background:#232532">Exportar vista</button>
+      <button onClick="{{ toggleConfig }}" style="cursor:pointer;font-family:Inter,sans-serif;font-weight:500;font-size:14px;line-height:1.2;color:#9184d9;background:transparent;border:1px solid #9184d9;padding:5.6px 12px;border-radius:8px" style-hover="background:rgba(145,132,217,0.12)">Umbrales</button>
+    </div>
+  </div>
+
+  <div style="max-width:1320px;margin:0 auto;padding:28px 22.4px 64px">
+
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:22.4px;flex-wrap:wrap;margin-bottom:22.4px">
+      <div>
+        <h1 style="font-size:34px;margin:0 0 5.6px;letter-spacing:-0.02em">Semáforo de días pendientes</h1>
+        <p style="margin:0;color:#9397ab;max-width:56ch;text-wrap:pretty">Clasificación de la población según días de vacaciones pendientes y períodos vencidos. Rojo primero.</p>
+      </div>
+      <div style="text-align:right;font-size:12px;color:#75798c;line-height:1.6">
+        <div>Fuente: {{ fuente }}</div>
+        <div>Corte: {{ corte }}</div>
+      </div>
+    </div>
+
+    <sc-if value="{{ hasExcluded }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:8.4px;padding:8.4px 11.2px;border:1px solid #423a6a;background:#1c1d2c;border-radius:8px;font-size:13px;color:#cfd3e5;margin-bottom:16.8px">
+        <span style="width:6px;height:6px;border-radius:50%;background:#d9b45f;flex:none"></span>
+        <span>{{ excludedMsg }}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showConfig }}" hint-placeholder-val="{{ false }}">
+      <div style="border:1px solid #3f424d;background:#1b1d2b;border-radius:14px;padding:16.8px 22.4px;margin-bottom:22.4px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16.8px;margin-bottom:11.2px">
+          <h3 style="font-size:16px;margin:0">Umbrales del semáforo</h3>
+          <span style="font-size:12px;color:#75798c">Propuesta por validar con RRHH · el recálculo es inmediato</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16.8px">
+          <sc-for list="{{ thFields }}" as="f" hint-placeholder-count="4">
+            <label style="display:flex;flex-direction:column;gap:5.6px;font-size:12px;color:#9397ab">
+              <span>{{ f.label }}</span>
+              <input type="number" value="{{ f.value }}" onChange="{{ f.onChange }}" style="width:100%;box-sizing:border-box;background:#232532;border:1px solid #3f424d;border-radius:8px;padding:6px 10px;color:#e9e9ed;font-family:Inter,sans-serif;font-size:14px">
+            </label>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8.4px;margin-top:16.8px">
+          <button onClick="{{ onResetTh }}" style="cursor:pointer;font-family:Inter,sans-serif;font-weight:500;font-size:13px;color:#cfd3e5;background:transparent;border:1px solid #3f424d;padding:5.6px 12px;border-radius:8px" style-hover="background:#232532">Restablecer umbrales</button>
+          <button onClick="{{ onResetData }}" style="cursor:pointer;font-family:Inter,sans-serif;font-weight:500;font-size:13px;color:#cfd3e5;background:transparent;border:1px solid #3f424d;padding:5.6px 12px;border-radius:8px" style-hover="background:#232532">Volver a datos de ejemplo</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16.8px;margin-bottom:16.8px">
+      <sc-for list="{{ lights }}" as="l" hint-placeholder-count="3">
+        <button onClick="{{ l.onClick }}" style="text-align:left;cursor:pointer;font-family:Inter,sans-serif;border:1px solid {{ l.border }};background:{{ l.bg }};border-radius:14px;padding:16.8px 16.8px 14px;display:flex;flex-direction:column;gap:11.2px;color:#e9e9ed">
+          <div style="display:flex;align-items:center;gap:8.4px">
+            <span style="width:9px;height:9px;border-radius:50%;background:{{ l.color }};flex:none"></span>
+            <span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#b2b6ca">{{ l.label }}</span>
+            <span style="margin-left:auto;font-size:11px;color:#75798c">{{ l.state }}</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:8.4px">
+            <span style="font-size:44px;font-weight:500;line-height:1;letter-spacing:-0.03em">{{ l.count }}</span>
+            <span style="font-size:17px;color:#9397ab">{{ l.pct }}</span>
+          </div>
+          <div style="height:3px;background:#292b31;border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:{{ l.pct }};background:{{ l.color }}"></div>
+          </div>
+          <div style="font-size:12px;color:#75798c">{{ l.rule }}</div>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:#292b31;border:1px solid #292b31;border-radius:14px;overflow:hidden;margin-bottom:28px">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+        <div style="background:#1b1d2b;padding:14px 16.8px">
+          <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#75798c;margin-bottom:5.6px">{{ k.label }}</div>
+          <div style="font-size:26px;font-weight:500;letter-spacing:-0.02em">{{ k.value }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:22.4px;margin-bottom:28px">
+
+      <div>
+        <h3 style="font-size:15px;margin:0 0 2.8px">Distribución de días pendientes</h3>
+        <p style="margin:0 0 14px;font-size:12px;color:#75798c">Colaboradores por rango de días acumulados.</p>
+        <div style="display:flex;flex-direction:column;gap:8.4px">
+          <sc-for list="{{ buckets }}" as="b" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:78px 1fr 46px;align-items:center;gap:11.2px">
+              <span style="font-size:12px;color:#9397ab;font-variant-numeric:tabular-nums">{{ b.label }}</span>
+              <div style="height:16px;background:#1e2030;border-radius:4px;overflow:hidden">
+                <div style="height:100%;width:{{ b.w }};background:{{ b.color }};opacity:0.85;transition:width .3s ease"></div>
+              </div>
+              <span style="font-size:12px;color:#cfd3e5;text-align:right;font-variant-numeric:tabular-nums">{{ b.n }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size:15px;margin:0 0 2.8px">Desglose por área</h3>
+        <p style="margin:0 0 14px;font-size:12px;color:#75798c">Ordenado por cantidad de casos críticos.</p>
+        <div style="display:flex;flex-direction:column;gap:11.2px">
+          <sc-for list="{{ areas }}" as="a" hint-placeholder-count="5">
+            <div>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8.4px;margin-bottom:5.6px">
+                <span style="font-size:13px">{{ a.name }}</span>
+                <span style="font-size:12px;color:#75798c;font-variant-numeric:tabular-nums">{{ a.summary }}</span>
+              </div>
+              <div style="display:flex;height:10px;border-radius:4px;overflow:hidden;background:#1e2030">
+                <div style="width:{{ a.wV }};background:#5fbf8b"></div>
+                <div style="width:{{ a.wA }};background:#d9b45f"></div>
+                <div style="width:{{ a.wR }};background:#d97a7a"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8.4px;flex-wrap:wrap;margin-bottom:11.2px">
+      <input type="text" value="{{ search }}" onChange="{{ onSearch }}" placeholder="Buscar por nombre o cédula" style="flex:1 1 240px;min-width:0;background:#232532;border:1px solid #3f424d;border-radius:8px;padding:7px 11.2px;color:#e9e9ed;font-family:Inter,sans-serif;font-size:14px">
+      <select value="{{ areaFilter }}" onChange="{{ onArea }}" style="background:#232532;border:1px solid #3f424d;border-radius:8px;padding:7px 11.2px;color:#e9e9ed;font-family:Inter,sans-serif;font-size:14px">
+        <sc-for list="{{ areaOptions }}" as="o" hint-placeholder-count="6">
+          <option value="{{ o }}">{{ o }}</option>
+        </sc-for>
+      </select>
+      <div style="display:flex;gap:2.8px;background:#232532;border:1px solid #3f424d;border-radius:8px;padding:2.8px">
+        <sc-for list="{{ colorTabs }}" as="t" hint-placeholder-count="4">
+          <button onClick="{{ t.onClick }}" style="cursor:pointer;font-family:Inter,sans-serif;font-size:13px;font-weight:500;border:0;border-radius:6px;padding:4px 11.2px;color:{{ t.fg }};background:{{ t.bg }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+      <span style="font-size:12px;color:#75798c;margin-left:auto">{{ shownMsg }}</span>
+    </div>
+
+    <div style="border:1px solid #292b31;border-radius:14px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:96px minmax(150px,1.7fr) 88px 96px 108px 98px 118px 104px;gap:11.2px;padding:9px 16.8px;background:#1e2030;border-bottom:1px solid #292b31">
+        <sc-for list="{{ columns }}" as="c" hint-placeholder-count="8">
+          <button onClick="{{ c.onClick }}" style="cursor:pointer;background:transparent;border:0;padding:0;text-align:{{ c.align }};font-family:Inter,sans-serif;font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:{{ c.fg }}">{{ c.label }}{{ c.arrow }}</button>
+        </sc-for>
+      </div>
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="12">
+        <div class="cv-row" style="display:grid;grid-template-columns:96px minmax(150px,1.7fr) 88px 96px 108px 98px 118px 104px;gap:11.2px;padding:9px 16.8px;border-bottom:1px solid #232532;font-size:13.5px;align-items:center">
+          <span style="color:#75798c;font-variant-numeric:tabular-nums">{{ r.id }}</span>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.nombre }}</span>
+          <span style="color:#9397ab">{{ r.area }}</span>
+          <span style="color:#9397ab;text-align:right;font-variant-numeric:tabular-nums">{{ r.antiguedad }}</span>
+          <span style="text-align:right;font-variant-numeric:tabular-nums;font-weight:500">{{ r.pendientes }}</span>
+          <span style="text-align:right;font-variant-numeric:tabular-nums;color:#9397ab">{{ r.vencidos }}</span>
+          <span style="color:#9397ab;text-align:right;font-variant-numeric:tabular-nums">{{ r.ultimo }}</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;justify-content:flex-end">
+            <span style="width:7px;height:7px;border-radius:50%;background:{{ r.color }};flex:none"></span>
+            <span style="font-size:12px;color:{{ r.color }}">{{ r.estado }}</span>
+          </span>
+        </div>
+      </sc-for>
+      <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:34px;text-align:center;color:#75798c;font-size:13px">Ningún colaborador coincide con los filtros.</div>
+      </sc-if>
+      <sc-if value="{{ hasMore }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ onMore }}" style="width:100%;cursor:pointer;background:#1b1d2b;border:0;padding:11.2px;color:#9184d9;font-family:Inter,sans-serif;font-weight:500;font-size:13px" style-hover="background:#232532">Mostrar más</button>
+      </sc-if>
+    </div>
+
+    <p style="margin:16.8px 0 0;font-size:11.5px;color:#595d6c;max-width:80ch;text-wrap:pretty">Marco LOTTT: 15 días hábiles base por año de servicio más 1 día por año de antigüedad, hasta 15 adicionales. La herramienta visibiliza la contingencia; no emite dictámenes legales. Los datos de personas se tratan como sensibles.</p>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:1000}}">
+const C = { verde: '#5fbf8b', amarillo: '#d9b45f', rojo: '#d97a7a' };
+const DEF_TH = { amDias: 16, roDias: 31, amPer: 1, roPer: 2 };
+const KEY_D = 'cv_data_v1', KEY_T = 'cv_th_v1';
+const AREAS = ['Área 1', 'Área 2', 'Área 3', 'Área 6', 'Área 15'];
+const NOM = ['María','José','Carmen','Luis','Ana','Carlos','Rosa','Jesús','Yolanda','Pedro','Gladys','Rafael','Marisol','Douglas','Yenny','Andrés','Zulay','Alexander','Nelly','Wilmer','Katherine','Freddy','Milagros','Ender','Yusmary','Gabriel','Norkys','Jhonny','Aracelis','Simón','Daniela','Oswaldo','Betzabeth','Ramón','Yajaira','Eduardo','Marbella','Héctor','Nayibe','Franklin'];
+const APE = ['González','Rodríguez','Pérez','Hernández','Rivas','Martínez','Sánchez','Ramírez','Torres','Suárez','Blanco','Mendoza','Castillo','Rojas','Guerra','Bastidas','Colmenares','Ochoa','Villalba','Piñango','Marcano','Salazar','Quintero','Bolívar','Araujo','Chacón','Fuenmayor','Camacho','Zambrano','Ledezma'];
+
+function rng(seed) { let s = seed; return () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }; }
+function fmtDate(d) { return d ? d.toISOString().slice(0, 10) : ''; }
+
+function seedData() {
+  const r = rng(20260906), out = [];
+  for (let i = 0; i < 312; i++) {
+    const ing = new Date(2026, 8, 6);
+    ing.setFullYear(2026 - Math.floor(r() * 22 + 1));
+    ing.setMonth(Math.floor(r() * 12));
+    ing.setDate(1 + Math.floor(r() * 27));
+    const ant = Math.max(1, 2026 - ing.getFullYear());
+    const gen = ant * Math.min(30, 15 + Math.min(15, ant - 1));
+    const roll = r();
+    let disfrutados = roll < 0.55 ? gen - Math.floor(r() * 16)
+      : roll < 0.82 ? gen - (16 + Math.floor(r() * 15))
+        : gen - (31 + Math.floor(r() * 40));
+    disfrutados = Math.max(0, Math.min(gen, disfrutados));
+    const pend = gen - disfrutados;
+    const per = pend > 30 ? 2 + Math.floor(r() * 2) : pend > 15 ? (r() < 0.6 ? 1 : 0) : 0;
+    const ult = new Date(2026, 8, 6);
+    ult.setMonth(ult.getMonth() - Math.floor(r() * 42) - per * 12);
+    out.push({
+      id: 'V-' + (11000000 + Math.floor(r() * 20000000)),
+      nombre: NOM[Math.floor(r() * NOM.length)] + ' ' + APE[Math.floor(r() * APE.length)] + ' ' + APE[Math.floor(r() * APE.length)],
+      area: AREAS[Math.floor(r() * AREAS.length)],
+      fecha_ingreso: fmtDate(ing),
+      dias_generados: gen,
+      dias_disfrutados: disfrutados,
+      dias_pendientes: pend,
+      periodos_vencidos: per,
+      ultimo_disfrute: pend >= gen ? '' : fmtDate(ult)
+    });
+  }
+  return out;
+}
+
+function antiguedad(p) {
+  if (!p.fecha_ingreso) return null;
+  const y = Number(String(p.fecha_ingreso).slice(0, 4));
+  return isNaN(y) ? null : Math.max(0, 2026 - y);
+}
+
+function classify(p, th) {
+  if (p.dias_pendientes > th.roDias - 1 || p.periodos_vencidos >= th.roPer) return 'rojo';
+  if (p.dias_pendientes >= th.amDias || p.periodos_vencidos >= th.amPer) return 'amarillo';
+  return 'verde';
+}
+
+function valid(p) {
+  return !!(p.nombre && p.area) && Number.isFinite(p.dias_pendientes) && p.dias_pendientes >= 0 && Number.isFinite(p.periodos_vencidos) && p.periodos_vencidos >= 0;
+}
+
+function parseCSV(text) {
+  const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
+  if (!lines.length) return [];
+  const sep = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ',';
+  const split = l => { const o = []; let cur = '', q = false; for (const ch of l) { if (ch === '"') q = !q; else if (ch === sep && !q) { o.push(cur); cur = ''; } else cur += ch; } o.push(cur); return o.map(s => s.trim()); };
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+  const head = split(lines[0]).map(norm);
+  const find = (...keys) => head.findIndex(h => keys.some(k => h.includes(k)));
+  const iId = find('cedula', 'id', 'documento'), iNom = find('nombre', 'colaborador'), iAr = find('area', 'gerencia', 'region');
+  const iIng = find('ingreso', 'fechaingreso'), iGen = find('generado'), iDis = find('disfrutado', 'tomado'), iPen = find('pendiente', 'saldo'), iPer = find('periodovencido', 'vencido', 'periodos'), iUlt = find('ultimodisfrute', 'ultimo');
+  const num = v => { const n = parseFloat(String(v || '').replace(',', '.')); return isNaN(n) ? null : n; };
+  return lines.slice(1).map((l, i) => {
+    const c = split(l);
+    const gen = iGen >= 0 ? num(c[iGen]) : null, dis = iDis >= 0 ? num(c[iDis]) : null;
+    let pen = iPen >= 0 ? num(c[iPen]) : null;
+    if (pen === null && gen !== null && dis !== null) pen = gen - dis;
+    return {
+      id: iId >= 0 ? c[iId] : 'F-' + (i + 1),
+      nombre: iNom >= 0 ? c[iNom] : '',
+      area: iAr >= 0 ? c[iAr] : '',
+      fecha_ingreso: iIng >= 0 ? c[iIng] : '',
+      dias_generados: gen, dias_disfrutados: dis,
+      dias_pendientes: pen === null ? NaN : pen,
+      periodos_vencidos: iPer >= 0 ? (num(c[iPer]) === null ? NaN : num(c[iPer])) : 0,
+      ultimo_disfrute: iUlt >= 0 ? c[iUlt] : ''
+    };
+  });
+}
+
+function download(name, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + text], { type: 'text/csv;charset=utf-8' }));
+  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    let data = null, th = null, fuente = 'Datos de ejemplo';
+    try {
+      const d = localStorage.getItem(KEY_D); if (d) { const o = JSON.parse(d); data = o.rows; fuente = o.fuente || fuente; }
+      const t = localStorage.getItem(KEY_T); if (t) th = JSON.parse(t);
+    } catch (e) { }
+    this.state = {
+      data: data && data.length ? data : seedData(),
+      fuente, th: Object.assign({}, DEF_TH, th || {}),
+      search: '', areaFilter: 'Todas las áreas', colorFilter: 'todos',
+      sort: { key: 'pendientes', dir: -1 }, limit: 40, showConfig: false
+    };
+  }
+
+  persist(patch) {
+    this.setState(patch, () => {
+      try {
+        localStorage.setItem(KEY_D, JSON.stringify({ rows: this.state.data, fuente: this.state.fuente }));
+        localStorage.setItem(KEY_T, JSON.stringify(this.state.th));
+      } catch (e) { }
+    });
+  }
+
+  setTh(k, v) { const th = Object.assign({}, this.state.th, { [k]: Number(v) || 0 }); this.persist({ th }); }
+
+  loadFile(e) {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      const rows = parseCSV(String(rd.result));
+      if (rows.length) this.persist({ data: rows, fuente: f.name, limit: 40 });
+    };
+    rd.readAsText(f, 'utf-8');
+    e.target.value = '';
+  }
+
+  filtered(all) {
+    const s = this.state.search.trim().toLowerCase();
+    return all.filter(p =>
+      (this.state.areaFilter === 'Todas las áreas' || p.area === this.state.areaFilter) &&
+      (this.state.colorFilter === 'todos' || p.estado === this.state.colorFilter) &&
+      (!s || p.nombre.toLowerCase().includes(s) || String(p.id).toLowerCase().includes(s))
+    );
+  }
+
+  renderVals() {
+    const { th, data, sort } = this.state;
+    const ok = data.filter(valid).map(p => Object.assign({}, p, { estado: classify(p, th), _ant: antiguedad(p) }));
+    const excluded = data.length - ok.length;
+    const total = ok.length || 1;
+    const cnt = { verde: 0, amarillo: 0, rojo: 0 };
+    let pend = 0, per = 0;
+    ok.forEach(p => { cnt[p.estado]++; pend += p.dias_pendientes; per += p.periodos_vencidos; });
+    const pct = k => Math.round(cnt[k] / total * 100) + '%';
+
+    const lights = [
+      { k: 'verde', label: 'Verde', state: 'Al día', rule: '0–' + (th.amDias - 1) + ' días y 0 períodos vencidos' },
+      { k: 'amarillo', label: 'Amarillo', state: 'Alerta', rule: th.amDias + '–' + (th.roDias - 1) + ' días o ' + th.amPer + ' período vencido' },
+      { k: 'rojo', label: 'Rojo', state: 'Crítico', rule: '≥' + th.roDias + ' días o ≥' + th.roPer + ' períodos vencidos' }
+    ].map(l => ({
+      label: l.label, state: l.state, rule: l.rule, count: cnt[l.k], pct: pct(l.k), color: C[l.k],
+      bg: this.state.colorFilter === l.k ? '#20222f' : '#1b1d2b',
+      border: this.state.colorFilter === l.k ? C[l.k] : '#3f424d',
+      onClick: () => this.setState({ colorFilter: this.state.colorFilter === l.k ? 'todos' : l.k, limit: 40 })
+    }));
+
+    const kpis = [
+      { label: 'Colaboradores evaluados', value: ok.length.toLocaleString('es-VE') },
+      { label: 'Días pendientes acumulados', value: pend.toLocaleString('es-VE') },
+      { label: 'Períodos vencidos', value: per.toLocaleString('es-VE') },
+      { label: 'Promedio días / persona', value: (pend / total).toFixed(1) }
+    ];
+
+    const bDefs = [['0–15', 0, 15, C.verde], ['16–30', 16, 30, C.amarillo], ['31–45', 31, 45, C.rojo], ['46–60', 46, 60, C.rojo], ['> 60', 61, 1e9, C.rojo]];
+    const bCounts = bDefs.map(d => ok.filter(p => p.dias_pendientes >= d[1] && p.dias_pendientes <= d[2]).length);
+    const bMax = Math.max(1, ...bCounts);
+    const buckets = bDefs.map((d, i) => ({ label: d[0], n: bCounts[i], color: d[3], w: Math.round(bCounts[i] / bMax * 100) + '%' }));
+
+    const byArea = {};
+    ok.forEach(p => { (byArea[p.area] = byArea[p.area] || { verde: 0, amarillo: 0, rojo: 0, n: 0 }); byArea[p.area][p.estado]++; byArea[p.area].n++; });
+    const areas = Object.keys(byArea).map(name => {
+      const a = byArea[name], w = k => Math.round(a[k] / a.n * 100) + '%';
+      return { name, rojo: a.rojo, summary: a.n + ' pers. · ' + a.rojo + ' en rojo', wV: w('verde'), wA: w('amarillo'), wR: w('rojo') };
+    }).sort((x, y) => y.rojo - x.rojo);
+
+    const fil = this.filtered(ok);
+    const getv = (p, k) => k === 'pendientes' ? p.dias_pendientes : k === 'vencidos' ? p.periodos_vencidos
+      : k === 'antiguedad' ? (p._ant || 0) : k === 'estado' ? ({ verde: 0, amarillo: 1, rojo: 2 })[p.estado]
+        : k === 'ultimo' ? (p.ultimo_disfrute || '') : k === 'area' ? p.area : k === 'id' ? String(p.id) : p.nombre;
+    const sorted = fil.slice().sort((a, b) => { const x = getv(a, sort.key), y = getv(b, sort.key); return (x > y ? 1 : x < y ? -1 : 0) * sort.dir; });
+    const rows = sorted.slice(0, this.state.limit).map(p => ({
+      id: p.id, nombre: p.nombre, area: p.area,
+      antiguedad: p._ant === null ? '—' : p._ant + ' a',
+      pendientes: p.dias_pendientes, vencidos: p.periodos_vencidos,
+      ultimo: p.ultimo_disfrute || '—',
+      color: C[p.estado], estado: p.estado.charAt(0).toUpperCase() + p.estado.slice(1)
+    }));
+
+    const cols = [['id', 'Cédula', 'left'], ['nombre', 'Nombre', 'left'], ['area', 'Área', 'left'], ['antiguedad', 'Antig.', 'right'], ['pendientes', 'Pendientes', 'right'], ['vencidos', 'Vencidos', 'right'], ['ultimo', 'Últ. disfrute', 'right'], ['estado', 'Estado', 'right']];
+    const columns = cols.map(c => ({
+      label: c[1], align: c[2],
+      fg: sort.key === c[0] ? '#e9e9ed' : '#75798c',
+      arrow: sort.key === c[0] ? (sort.dir === 1 ? ' ↑' : ' ↓') : '',
+      onClick: () => this.setState({ sort: { key: c[0], dir: sort.key === c[0] ? -sort.dir : -1 } })
+    }));
+
+    const tabs = [['todos', 'Todos'], ['verde', 'Verde'], ['amarillo', 'Amarillo'], ['rojo', 'Rojo']];
+    const colorTabs = tabs.map(t => ({
+      label: t[1],
+      bg: this.state.colorFilter === t[0] ? '#3f424d' : 'transparent',
+      fg: this.state.colorFilter === t[0] ? '#e9e9ed' : '#9397ab',
+      onClick: () => this.setState({ colorFilter: t[0], limit: 40 })
+    }));
+
+    const thFields = [
+      { key: 'amDias', label: 'Amarillo desde (días)' }, { key: 'roDias', label: 'Rojo desde (días)' },
+      { key: 'amPer', label: 'Amarillo desde (períodos)' }, { key: 'roPer', label: 'Rojo desde (períodos)' }
+    ].map(f => ({ label: f.label, value: th[f.key], onChange: e => this.setTh(f.key, e.target.value) }));
+
+    return {
+      lights, kpis, buckets, areas, rows, columns, colorTabs, thFields,
+      fuente: this.state.fuente, corte: '6 de septiembre de 2026',
+      hasExcluded: excluded > 0,
+      excludedMsg: excluded + ' registro' + (excluded === 1 ? '' : 's') + ' excluido' + (excluded === 1 ? '' : 's') + ' del conteo por datos incompletos o inconsistentes.',
+      showConfig: this.state.showConfig,
+      toggleConfig: () => this.setState({ showConfig: !this.state.showConfig }),
+      search: this.state.search,
+      onSearch: e => this.setState({ search: e.target.value, limit: 40 }),
+      areaFilter: this.state.areaFilter,
+      areaOptions: ['Todas las áreas'].concat(Object.keys(byArea).sort()),
+      onArea: e => this.setState({ areaFilter: e.target.value, limit: 40 }),
+      shownMsg: 'Mostrando ' + rows.length + ' de ' + fil.length,
+      empty: fil.length === 0,
+      hasMore: fil.length > rows.length,
+      onMore: () => this.setState({ limit: this.state.limit + 60 }),
+      onFile: e => this.loadFile(e),
+      onTemplate: () => download('plantilla-vacaciones.csv', 'id,nombre,area,fecha_ingreso,dias_generados,dias_disfrutados,dias_pendientes,periodos_vencidos,ultimo_disfrute\nV-12345678,Nombre Apellido,Área 1,2015-03-01,120,90,30,1,2024-07-15\n'),
+      onExport: () => download('vacaciones-vista.csv', ['id,nombre,area,fecha_ingreso,dias_pendientes,periodos_vencidos,ultimo_disfrute,estado']
+        .concat(sorted.map(p => [p.id, '"' + p.nombre + '"', p.area, p.fecha_ingreso, p.dias_pendientes, p.periodos_vencidos, p.ultimo_disfrute, p.estado].join(','))).join('\n')),
+      onResetTh: () => this.persist({ th: Object.assign({}, DEF_TH) }),
+      onResetData: () => this.persist({ data: seedData(), fuente: 'Datos de ejemplo', limit: 40 })
+    };
+  }
+}
+
+</script>
+</body>
+</html>
